@@ -1,4 +1,5 @@
 import Utils from "@/components/dropdowns/utils";
+import { createDropdownContent } from "@/components/dropdowns/jumplists";
 import { createElementFromHtml } from "@/util/dom";
 
 export default function computeBreadcrumbs() {
@@ -60,6 +61,51 @@ export default function computeBreadcrumbs() {
       });
 
       instance.setContent(Utils.generateDropdownItems(mappedItems));
+
+      // Restore the context/children menus for the collapsed breadcrumbs,
+      // as they are otherwise lost when the items move into the overflow menu
+      const menuItems = instance.popper.querySelectorAll(
+        ".jenkins-dropdown > .jenkins-dropdown__item",
+      );
+      items.forEach((breadcrumb, index) => {
+        const menuItem = menuItems[index];
+        if (!menuItem) {
+          return;
+        }
+
+        const indicator = breadcrumb.querySelector(".dropdown-indicator");
+        if (!indicator) {
+          return;
+        }
+
+        const hasModelMenu = indicator.dataset.model;
+        const hasChildrenMenu = indicator.dataset.children;
+        if (hasModelMenu !== "true" && hasChildrenMenu !== "true") {
+          return;
+        }
+
+        const href = breadcrumb.querySelector("a")?.href;
+        if (!href) {
+          return;
+        }
+
+        Utils.generateDropdown(
+          menuItem,
+          createDropdownContent(
+            breadcrumb,
+            hasModelMenu,
+            hasChildrenMenu,
+            href,
+          ),
+          false,
+          {
+            trigger: "mouseenter",
+            placement: "right-start",
+            offset: [-8, 0],
+            animation: "tooltip",
+          },
+        );
+      });
     },
     true,
     {

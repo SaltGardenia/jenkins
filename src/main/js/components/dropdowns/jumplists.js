@@ -200,4 +200,4 @@ function createDropdownContent(element, hasModelLink, hasChildrenLink, href) {
   };
 }
 
-export default { init };
+export default { init, createDropdownContent };
